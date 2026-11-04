@@ -1,0 +1,112 @@
+plugins {
+    id("earth.terrarium.cloche") version "0.19.13"
+    id("maven-publish")
+}
+
+group = 'tess.mc.util'
+version = '1.0.0'
+
+repositories {
+    cloche.librariesMinecraft()
+
+    mavenCentral()
+
+    cloche {
+        main() // General multiplatform or configuration libraries, generally not needed in single-target neoforge
+
+        // Neoforge specific mavens (if neoforge targets are added)
+        mavenNeoforgedMeta()
+        mavenNeoforged(/* releases */)
+
+        mavenFabric() // maven.fabricmc.net (if fabric targets are added)
+        mavenForge() // maven.minecraftforge.net (if forge targets are added)
+
+        mavenParchment() // maven.parchmentmc.org (if parchment is used)
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                url = "https://maven.bawnorton.com/releases"
+            }
+        }
+        filter {
+            includeGroup "com.github.bawnorton.mixinsquared"
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Terraformers"
+                url = "https://maven.terraformersmc.com/"
+            }
+        }
+        filter {
+            includeGroup "com.terraformersmc"
+        }
+    }
+
+}
+
+cloche {
+    metadata {
+        // Automatically generate mod metadata file
+        modId = "mixin_fixer"
+        name = "Mixin Fixer"
+        description = "Automatically fix some compatibility issue with how some mixin are written"
+        license = "MIT"
+
+        author("tess")
+    }
+    minecraftVersion = "1.21.1"
+
+    mappings {
+        official()
+        parchment("2024.11.17")
+    }
+
+    common {
+        dependencies {
+            annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:${project.mixinsquared_version}")
+            compileOnly("com.github.bawnorton.mixinsquared:mixinsquared-common:${project.mixinsquared_version}")
+        }
+    }
+
+    neoforge {
+        loaderVersion = "21.1.26"
+        dependencies {
+            include("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:${project.mixinsquared_version}")
+            implementation("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:${project.mixinsquared_version}")
+        }
+        runs {
+            client()
+        }
+    }
+
+    fabric {
+        metadata {
+            entrypoint("mixinsquared-adjuster", "tess.mc.mixinFixer.mixin.FixerAnnotationAdjuster")
+        }
+        includedClient()
+
+        loaderVersion = "0.19.5"
+        dependencies {
+            annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${project.mixinsquared_version}")
+            implementation("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${project.mixinsquared_version}")
+        }
+
+        runs {
+            client()
+        }
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
