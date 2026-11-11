@@ -44,7 +44,54 @@ repositories {
             includeGroup "com.terraformersmc"
         }
     }
-
+    exclusiveContent {
+        forRepositories(
+                maven {
+                    url = "https://maven.ryanhcode.dev/releases"
+                    name = "RyanHCode Maven"
+                }
+        )
+        filter {
+            includeGroup "dev.ryanhcode.sable"
+            includeGroup "dev.ryanhcode.sable-companion"
+        }
+    }
+    exclusiveContent {
+        forRepositories(
+                maven {
+                    name = 'BlameJared'
+                    url = 'https://maven.blamejared.com'
+                }
+        )
+        filter {
+            includeGroup "foundry.veil"
+            includeGroup "gg.moonflower"
+            includeGroup "io.github.ocelot"
+        }
+    }
+    exclusiveContent {
+        forRepositories(
+                maven {
+                    name = "Fuzs Mod Resources"
+                    url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+                }
+        )
+        filter {
+            includeGroup "fuzs.forgeconfigapiport"
+        }
+    }
+    exclusiveContent {
+        forRepositories(
+                maven { url = "https://maven.createmod.net" }, // Create, Ponder, Flywheel
+                maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
+        )
+        filter {
+            includeGroup "com.simibubi.create"
+            includeGroup "net.createmod.ponder"
+            includeGroup "dev.engine-room.flywheel"
+            includeGroup "com.tterrag.registrate"
+        }
+    }
 }
 
 cloche {
@@ -53,9 +100,10 @@ cloche {
         modId = "mixin_fixer"
         name = "Mixin Fixer"
         description = "Automatically fix some compatibility issue with how some mixin are written"
-        license = "MIT"
+        license = "CC BY-NC-SA 4.0"
 
-        author("tess")
+        author("Tess")
+        icon = "asset/logo.png"
     }
     minecraftVersion = "1.21.1"
 
@@ -72,6 +120,7 @@ cloche {
         dependencies {
             annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:${project.mixinsquared_version}")
             compileOnly("com.github.bawnorton.mixinsquared:mixinsquared-common:${project.mixinsquared_version}")
+            implementation("dev.ryanhcode.sable:sable-sable_rapier-${"1.21.1"}:${project.sable_version}")
         }
     }
 
@@ -80,6 +129,7 @@ cloche {
         dependencies {
             include("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:${project.mixinsquared_version}")
             implementation("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:${project.mixinsquared_version}")
+            modRuntimeOnly("dev.ryanhcode.sable:sable-neoforge-1.21.1:${project.sable_version}")
         }
         runs {
             client()
@@ -93,6 +143,11 @@ cloche {
         dependencies {
             annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${project.mixinsquared_version}")
             implementation("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${project.mixinsquared_version}")
+            modRuntimeOnly("com.terraformersmc:modmenu:11.0.5")
+            modImplementation("com.terraformersmc:modmenu:11.0.5")
+            modImplementation("net.fabricmc.fabric-api:fabric-api:0.116.18+1.21.1")
+            modRuntimeOnly("dev.ryanhcode.sable:sable-fabric-1.21.1:${project.sable_version}")
+
         }
 
         runs {
