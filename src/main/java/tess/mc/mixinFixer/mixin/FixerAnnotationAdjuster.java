@@ -131,6 +131,7 @@ public class FixerAnnotationAdjuster implements MixinAnnotationAdjuster {
                 }
             }
         }
+
         if (!indexes.isEmpty()) {
             Type handlerNodeType = Type.getMethodType(data.handlerNode.desc);
             boolean isStatic = indexes.get(0).getOpcode() == Opcodes.INVOKESTATIC;
@@ -185,9 +186,54 @@ public class FixerAnnotationAdjuster implements MixinAnnotationAdjuster {
                 data.handlerNode.parameters.add(originalParameterIndex, new ParameterNode("original", 0));
 
 
-            //  Add optional localVariable
             int originalVariableIndex = Asmutil.getVariableIndexOffsetFromDesc(handlerNodeDescWithoutCaptureType.getDescriptor()) + (((data.handlerNode.access & Opcodes.ACC_STATIC) > 0)?0:1);
 
+            //  Add optional localVariable
+            //TODO
+            /*if (data.handlerNode.localVariables != null) {
+                LocalVariableNode firstParameter = null;
+                for (int i = 0; i < data.handlerNode.localVariables.size(); i++) {
+                    if (Objects.equals(data.handlerNode.localVariables.get(i).name, data.handlerNode.parameters.getFirst().name)) {
+                        firstParameter = data.handlerNode.localVariables.get(i);
+                        break;
+                    }
+                }
+
+                LocalVariableNode previousVariable = null;
+                for (int i = 0; i < data.handlerNode.localVariables.size(); i++) {
+                    if (Objects.equals(data.handlerNode.localVariables.get(i).name, data.handlerNode.parameters.get(handlerNodeDescWithoutCaptureType.getArgumentCount() - 1).name)) {
+                        previousVariable = data.handlerNode.localVariables.get(i);
+                        break;
+                    }
+                }
+                LocalVariableNode originalVariable = new LocalVariableNode("original",
+                        "Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;",
+                        originalTypeSignature, firstParameter.start,
+                        firstParameter.end,
+                        previousVariable.index + ((previousVariable.desc.charAt(0) == 'D' || previousVariable.desc.charAt(0) == 'J') ? 2 : 1));
+                if (originalVariableIndex > data.handlerNode.localVariables.size())
+                    data.handlerNode.localVariables.add(originalVariable);
+                else
+                    data.handlerNode.localVariables.add(originalVariableIndex, originalVariable);
+
+                for (int i = 0; i < originalVariableIndex; i++) {
+                    if (data.handlerNode.localVariables.get(i).index >= originalVariable.index)
+                        data.handlerNode.localVariables.get(i).index++;
+                }
+                for (int i = originalVariableIndex + 1; i < data.handlerNode.localVariables.size(); i++) {
+                    if (data.handlerNode.localVariables.get(i).index >= originalVariable.index)
+                        data.handlerNode.localVariables.get(i).index++;
+                }
+            }*/
+
+
+            if (data.handlerNode.visibleParameterAnnotations != null) {
+                List<AnnotationNode>[] visibleParameterAnnotations = data.handlerNode.visibleParameterAnnotations;
+                data.handlerNode.visibleParameterAnnotations = new List[handlerNodeType.getArgumentTypes().length + 1];
+                data.handlerNode.visibleParameterAnnotations[originalParameterIndex] = null;
+                System.arraycopy(visibleParameterAnnotations, 0, data.handlerNode.visibleParameterAnnotations, 0, originalParameterIndex);
+                System.arraycopy(visibleParameterAnnotations, originalParameterIndex, data.handlerNode.visibleParameterAnnotations, originalParameterIndex + 1, visibleParameterAnnotations.length - originalParameterIndex);
+            }
 
             if (data.handlerNode.invisibleParameterAnnotations != null) {
                 List<AnnotationNode>[] invisibleParameterAnnotations = data.handlerNode.invisibleParameterAnnotations;
@@ -196,50 +242,6 @@ public class FixerAnnotationAdjuster implements MixinAnnotationAdjuster {
                 System.arraycopy(invisibleParameterAnnotations, 0, data.handlerNode.invisibleParameterAnnotations, 0, originalParameterIndex);
                 System.arraycopy(invisibleParameterAnnotations, originalParameterIndex, data.handlerNode.invisibleParameterAnnotations, originalParameterIndex + 1, invisibleParameterAnnotations.length - originalParameterIndex);
             }
-
-                /*if (data.handlerNode.localVariables != null) { TODO-ish, not needed to run but still better to have it
-                    LocalVariableNode firstParameter = null;
-                    for (int i = 0; i < data.handlerNode.localVariables.size(); i++) {
-                        if (Objects.equals(data.handlerNode.localVariables.get(i).name, data.handlerNode.parameters.getFirst().name)) {
-                            firstParameter = data.handlerNode.localVariables.get(i);
-                            break;
-                        }
-                    }
-
-                    LocalVariableNode previousVariable = null;
-                    for (int i = 0; i < data.handlerNode.localVariables.size(); i++) {
-                        if (Objects.equals(data.handlerNode.localVariables.get(i).name, data.handlerNode.parameters.get(handlerNodeDescWithoutCaptureType.getArgumentCount() - 1).name)) {
-                            previousVariable = data.handlerNode.localVariables.get(i);
-                            break;
-                        }
-                    }
-                    LocalVariableNode originalVariable = new LocalVariableNode("original",
-                            "Lcom/llamalad7/mixinextras/injector/wrapoperation/Operation;",
-                            originalTypeSignature, firstParameter.start,
-                            firstParameter.end,
-                            previousVariable.index + ((previousVariable.desc.charAt(0) == 'D' || previousVariable.desc.charAt(0) == 'J') ? 2 : 1));
-                    if (originalVariableIndex > data.handlerNode.localVariables.size())
-                        data.handlerNode.localVariables.add(originalVariable);
-                    else
-                        data.handlerNode.localVariables.add(originalVariableIndex, originalVariable);
-
-                    if (data.handlerNode.invisibleParameterAnnotations != null) {
-                        List<AnnotationNode>[] invisibleParameterAnnotations = data.handlerNode.invisibleParameterAnnotations;
-                        data.handlerNode.invisibleParameterAnnotations = new List[data.handlerNode.parameters.size()];
-                        data.handlerNode.invisibleParameterAnnotations[originalParameterIndex] = null;
-                        System.arraycopy(invisibleParameterAnnotations, 0, data.handlerNode.invisibleParameterAnnotations, 0, originalParameterIndex);
-                        System.arraycopy(invisibleParameterAnnotations, originalParameterIndex, data.handlerNode.invisibleParameterAnnotations, originalParameterIndex + 1, invisibleParameterAnnotations.length - originalParameterIndex);
-                    }
-
-                    for (int i = 0; i < originalVariableIndex; i++) {
-                        if (data.handlerNode.localVariables.get(i).index >= originalVariable.index)
-                            data.handlerNode.localVariables.get(i).index++;
-                    }
-                    for (int i = originalVariableIndex + 1; i < data.handlerNode.localVariables.size(); i++) {
-                        if (data.handlerNode.localVariables.get(i).index >= originalVariable.index)
-                            data.handlerNode.localVariables.get(i).index++;
-                    }
-                }*/
 
             for (int i = 0; i < data.handlerNode.instructions.size(); i++) {
                 if (data.handlerNode.instructions.get(i) instanceof VarInsnNode varNode && varNode.var >= originalVariableIndex)
